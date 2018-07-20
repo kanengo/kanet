@@ -16,7 +16,7 @@ class ThreadPool
         running_ = true;
         for (int i = 0; i < poolSize; i++)
         {
-            m_threads.emplace_back([&]()
+            m_threads.emplace_back([this]()
             {
                 while(running_)
                 {
@@ -29,7 +29,7 @@ class ThreadPool
 
     void Detach()
     {
-        for(int i = 0; i < m_threads.size(); i++)
+        for(std::size_t i = 0; i < m_threads.size(); i++)
         {
             if (m_threads[i].joinable())
                 m_threads[i].detach();

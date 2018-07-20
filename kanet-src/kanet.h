@@ -1,15 +1,34 @@
 #pragma once
-#include "kanet_server.h"
-class Server
+#include <thread>
+#include <vector>
+#include "thread_pool.h"
+#include "my_epoll.h"
+
+#include "nocopyable.h"
+
+using namespace std;
+
+class Kanet : NoCopyable
 {
 public:
-    static Server* GetInstance()
-    {
+    void start(int port);
 
-    }
+    // static Kanet* GetInstance();
+    Kanet();
+    Kanet(int subIoThreadNum, int workerThreadNum);
+    ~Kanet();
 
-    void run()
-    {
-        KanetServer::GetInstance()->run();
-    }
+
+    // void listen(int port);
+
+private:
+    int subIoThreadNum_;
+    int workerThreadNum_;
+    // MySocket* listenSock_;
+
+    static void SubReactor(MyEpoll& epoller);
+    void InitIOThreads();
+    void InitWorkersThreads();
+    void MainReactor(int port);
+
 };

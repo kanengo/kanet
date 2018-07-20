@@ -17,6 +17,7 @@ class MySocket
 public:
 
 	MySocket(int sockfd) :sock_fd_(sockfd) {};
+	MySocket(MySocket&& rhs);
 	static MySocket CreateSocket(int protofamily, int type, int protocol);
 	void setsockopt(int level, int optname, int optval);
 	void setsockopt(int level, int optname, const void *optval, socklen_t optsize);

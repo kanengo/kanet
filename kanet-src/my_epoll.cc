@@ -8,7 +8,7 @@ MyEpoll::MyEpoll(int maxevents = 64)
 		throw SocketException("create socket error:" + std::string(strerror(errno)));
 	}
 	maxevents_ = maxevents;
-	_events = new epEvent[maxevents];
+	events_ = new epEvent[maxevents];
 }
 
 void MyEpoll::del(int fd)
@@ -32,15 +32,19 @@ void MyEpoll::mod(int fd, epEvent * event)
 	}
 }
 
-int MyEpoll::wait(epEvent * events, int maxevents, int timeout = -1)
+int MyEpoll::wait(int timeout)
 {
-	return ::epoll_wait(efd_, events, maxevents, timeout);
+	return ::epoll_wait(efd_, events_, maxevents_, timeout);
 }
 
-void MyEpoll::addListenFd(int fd)
+void MyEpoll::addEvent(int fd, void* data)
 {
-	listenfd_ = fd;
+	epEvent ev;
+	ev.data.ptr = data;
+	ev.events = EPOLLET | EPOLLIN | EPOLLERR | EPOLLRDHUP | EPOLLHUP;
+	add(fd, &ev);
 }
+
 
 void MyEpoll::modEvnet(int fd, void * data, bool write)
 {
@@ -71,10 +75,10 @@ void MyEpoll::poll()
 	/*int nevent;
 	while (true)
 	{
-		nevent = wait(_events, maxevents_);
+		nevent = wait(events_, maxevents_);
 		for (int i = 0; i < nevent; i++)
 		{
-			auto data = static_cast<SocketData* >(_events[i].data.ptr);
+			auto data = static_cast<SocketData* >(events_[i].data.ptr);
 			if (data->fd == listenfd_) {
 				int  listenfd = data->fd;
 				Socket s(listenfd);
@@ -87,7 +91,7 @@ void MyEpoll::poll()
 					_onConnectCallback(sc);
 				}
 			}
-			else if(_events[i].events & EPOLLIN){
+			else if(events_[i].events & EPOLLIN){
 
 			}
 		}
@@ -95,20 +99,10 @@ void MyEpoll::poll()
 }
 
 
-void MyEpoll::addEvent(int fd, void* data)
-{
-	epEvent ev;
-	ev.data.ptr = data;
-	ev.events = EPOLLET | EPOLLIN | EPOLLERR | EPOLLRDHUP | EPOLLHUP;
-	add(fd, &ev);
-}
-
-
-
 MyEpoll::~MyEpoll()
 {
 	if (efd_ > 0)
 		close(efd_);
-	if(_events)
-		delete []_events;
+	if(events_)
+		delete []events_;
 }

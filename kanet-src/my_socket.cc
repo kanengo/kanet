@@ -1,5 +1,10 @@
 #include "my_socket.h"
 
+MySocket::MySocket(MySocket&& rhs)
+{
+	sock_fd_ = rhs.sock_fd_;
+}
+
 MySocket MySocket::CreateSocket(int protofamily = AF_INET, int type = SOCK_STREAM, int protocol = 0)
 {
 	int sockfd = ::socket(protofamily, type, protocol);

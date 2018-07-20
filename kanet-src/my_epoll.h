@@ -23,11 +23,13 @@ public:
 	void add(int fd, epEvent *event);
 	void mod(int fd, epEvent *event);
 	void del(int fd);
-	int wait(epEvent *events, int maxevents, int timeout);
+	int wait(int timeout);
 
 	void addListenFd(int fd);
 	void addEvent(int fd, void* data);
 	void modEvnet(int fd, void* data, bool write);
+
+	epEvent* events() const {return events_;}
 	
 	// void setOnConnectCallback(callback cb);
 	// void setOnReadCallback(callback cb);
@@ -36,9 +38,8 @@ public:
 	virtual ~MyEpoll();
 private:
 	int efd_;
-	int listenfd_;
 	int maxevents_;
-	epEvent *_events;
+	epEvent *events_;
 	
 	
 	// callback _onConnectCallback;
