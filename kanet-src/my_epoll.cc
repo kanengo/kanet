@@ -1,19 +1,27 @@
 #include "my_epoll.h"
 
+MyEpoll::MyEpoll()
+	:MyEpoll(64)
+{
+}
 
-MyEpoll::MyEpoll(int maxevents = 64)
+MyEpoll::MyEpoll(int fd, int maxevents)
+	:efd_(fd),maxevents_(maxevents)
+{
+}
+
+MyEpoll::MyEpoll(int maxevents):maxevents_(maxevents)
 {
 	efd_ = epoll_create(1024);
 	if (efd_ == -1) {
 		throw SocketException("create socket error:" + std::string(strerror(errno)));
 	}
-	maxevents_ = maxevents;
 	events_ = new epEvent[maxevents];
 }
 
 void MyEpoll::del(int fd)
 {
-	if (epoll_ctl(efd_, EPOLL_CTL_ADD, fd, nullptr) == -1) {
+	if (epoll_ctl(efd_, EPOLL_CTL_DEL, fd, nullptr) == -1) {
 		throw SocketException("epoll addEvent error:" + std::string(strerror(errno)));
 	}
 }
@@ -37,20 +45,28 @@ int MyEpoll::wait(int timeout)
 	return ::epoll_wait(efd_, events_, maxevents_, timeout);
 }
 
+void MyEpoll::addEvent(int fd)
+{
+	epEvent ev;
+	ev.events = EPOLLET | EPOLLIN | EPOLLERR | EPOLLRDHUP | EPOLLHUP | EPOLLPRI;
+	ev.data.fd = fd;
+	add(fd, &ev);
+}
+
 void MyEpoll::addEvent(int fd, void* data)
 {
 	epEvent ev;
 	ev.data.ptr = data;
-	ev.events = EPOLLET | EPOLLIN | EPOLLERR | EPOLLRDHUP | EPOLLHUP;
+	ev.events = EPOLLET | EPOLLIN | EPOLLERR | EPOLLRDHUP | EPOLLHUP | EPOLLPRI;
 	add(fd, &ev);
 }
 
 
-void MyEpoll::modEvnet(int fd, void * data, bool write)
+void MyEpoll::modEvnet(int fd, bool write)
 {
 	epEvent ev;
-	ev.data.ptr = data;
-	ev.events = EPOLLET | EPOLLIN | EPOLLERR | EPOLLRDHUP | EPOLLHUP|(write ? EPOLLOUT : 0);
+	ev.data.fd = fd;
+	ev.events = EPOLLET | EPOLLIN | EPOLLERR | EPOLLRDHUP | EPOLLHUP | EPOLLPRI | (write ? EPOLLOUT : 0);
 	mod(fd, &ev);
 }
 

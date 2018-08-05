@@ -19,17 +19,21 @@ class MyEpoll
 	typedef std::function<void(SocketChannle&)> callback;
 	typedef epoll_event epEvent;
 public:
+	MyEpoll();
 	MyEpoll(int maxevents);
+	MyEpoll(int fd, int maxevents);
 	void add(int fd, epEvent *event);
 	void mod(int fd, epEvent *event);
 	void del(int fd);
 	int wait(int timeout);
 
-	void addListenFd(int fd);
+	void addEvent(int fd);
 	void addEvent(int fd, void* data);
-	void modEvnet(int fd, void* data, bool write);
+	void modEvnet(int fd, bool write);
 
 	epEvent* events() const {return events_;}
+
+	int efd() const {return efd_;}
 	
 	// void setOnConnectCallback(callback cb);
 	// void setOnReadCallback(callback cb);

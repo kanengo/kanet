@@ -9,7 +9,7 @@ using namespace std;
 using handler = function<void()>;
 class ThreadPool
 {
-  public:
+public:
     ThreadPool(int poolSize, int qsize = 1024)
         : size_(poolSize), m_threads(vector<thread>()), m_queue(SyncQueue<handler>(qsize))
     {
@@ -58,7 +58,7 @@ class ThreadPool
 
     }
 
-  private:
+private:
     int size_;
     bool running_;
     vector<thread> m_threads;

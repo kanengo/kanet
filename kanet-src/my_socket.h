@@ -11,6 +11,7 @@
 #include <netinet/in.h>
 #include "inet_addr.h"
 #include "socket_exception.h"
+#include <iostream>
 
 class MySocket
 {
@@ -18,7 +19,7 @@ public:
 
 	MySocket(int sockfd) :sock_fd_(sockfd) {};
 	MySocket(MySocket&& rhs);
-	static MySocket CreateSocket(int protofamily, int type, int protocol);
+	static int CreateSocket();
 	void setsockopt(int level, int optname, int optval);
 	void setsockopt(int level, int optname, const void *optval, socklen_t optsize);
 	bool bind(const uint16_t port);
@@ -27,7 +28,7 @@ public:
 	bool connect(const std::string host, const uint16_t port);
 	ssize_t recv(void* buf, size_t len, int flag);
 	ssize_t send(const void *buf, size_t len, int flag);
-	MySocket accept(sockaddr_in* clientaddr);
+	int  accept(sockaddr_in* clientaddr);
 	bool close();
 	int sock_fd() const;
 	~MySocket();

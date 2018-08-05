@@ -95,6 +95,15 @@ public:
 		return m_q[wIdx_]->flag == SyncQueue::READ;
 	}
 private:
+	int capacity_;
+	QueueData ** m_q;
+	//vector<QueueData> m_q;
+	volatile int rdx_;
+	volatile int wIdx_;
+	volatile int count_;
+	condition_variable_any cvempty;
+	condition_variable_any cvfull;
+	Lock m_lock;
 
 	bool _push(const T & ref) {
 		if (!full()) {
@@ -129,17 +138,7 @@ private:
 
 	}
 
-	int capacity_;
-	// int m_cachesize;
-	QueueData ** m_q;
-	//vector<QueueData> m_q;
-	//list<T> m_qc;
-	volatile int rdx_;
-	volatile int wIdx_;
-	volatile int count_;
-	condition_variable_any cvempty;
-	condition_variable_any cvfull;
-	Lock m_lock;
+
 
 };
 

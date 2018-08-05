@@ -1,21 +1,28 @@
 #include "socket_channel.h"
 
-SocketChannle::SocketChannle(MySocket& s, InetAddr & addr)
-	:socket_(s), inet_addr_(addr)
+SocketChannle::SocketChannle(int fd, const sockaddr_in & addr)
+{
+	p_socket.reset(new MySocket(fd));
+	p_inetAddr.reset(new InetAddr(addr));
+}
+
+SocketChannle::~SocketChannle()
 {
 }
+
+
 
 int SocketChannle::getSockFd()
 {
-	return socket_.sock_fd();
+	return p_socket->sock_fd();
 }
 
-const MySocket &SocketChannle::socket() const
+PSocket & SocketChannle::socket()
 {
-	return socket_;
+	return p_socket;
 }
 
-const InetAddr &SocketChannle::inet_addr() const
+const PInetAddr & SocketChannle::inet_addr() const
 {
-	return inet_addr_;
+	return p_inetAddr;
 }

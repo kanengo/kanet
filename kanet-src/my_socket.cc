@@ -2,17 +2,18 @@
 
 MySocket::MySocket(MySocket&& rhs)
 {
+	std::cout << "MySocket Copy funcccccccccc" << rhs.sock_fd_ << std::endl;
 	sock_fd_ = rhs.sock_fd_;
 }
 
-MySocket MySocket::CreateSocket(int protofamily = AF_INET, int type = SOCK_STREAM, int protocol = 0)
+int MySocket::CreateSocket()
 {
-	int sockfd = ::socket(protofamily, type, protocol);
-	if (sockfd <= 0) {
+	int fd = ::socket(AF_INET, SOCK_STREAM, 0);
+	if (fd <= 0) {
 		throw SocketException("create socket error:" + std::string(strerror(errno)));
 	}
 	
-	return MySocket(sockfd);
+	return fd;
 }
 
 void MySocket::setsockopt(int level, int optname, int optval)
@@ -59,12 +60,12 @@ bool MySocket::listen(const int maxListenNum)
 
 bool MySocket::setblocking(const bool isBlock)
 {
-	int flag = fcntl(sock_fd_, F_GETFL, 0);
+	int flag = ::fcntl(sock_fd_, F_GETFL, 0);
 	if (isBlock)
-		flag |= O_NONBLOCK;
+		flag &= ~O_NONBLOCK;
 	else
-		flag &= O_NONBLOCK;
-	if (fcntl(sock_fd_, F_SETFL, flag) == -1) {
+		flag |= O_NONBLOCK;
+	if (::fcntl(sock_fd_, F_SETFL, flag) == -1) {
 		throw SocketException("set socket blocking error:" + std::string(strerror(errno)));
 	}
 
@@ -105,17 +106,19 @@ ssize_t MySocket::recv(void * buf, size_t sz, int flag = 0)
 	//}
 	//
 	//return sz - left;
-	ssize_t nread = ::recv(sock_fd_, buf, sz, flag);
+	int fd = sock_fd_;
+	ssize_t nread = ::recv(fd, buf, sz, flag);
 	return nread;
 	
 }
 
 ssize_t MySocket::send(const void * buf, size_t len, int flag = 0)
 {
-	return ::send(sock_fd_, buf, len, flag);
+	int fd = sock_fd_;
+	return ::send(fd, buf, len, flag);
 }
 
-MySocket MySocket::accept(sockaddr_in* clientaddr = nullptr)
+int MySocket::accept(sockaddr_in* clientaddr)
 {
 	socklen_t socklen = static_cast<socklen_t>(sizeof(sockaddr));
 	int client_fd = ::accept(sock_fd_, (sockaddr*)clientaddr, &socklen);
@@ -123,8 +126,7 @@ MySocket MySocket::accept(sockaddr_in* clientaddr = nullptr)
 		throw SocketException("socket accept error:" + std::string(strerror(errno)));
 	}
 
-	MySocket s(client_fd);
-	return s;
+	return client_fd;
 }
 
 bool MySocket::close()
@@ -145,7 +147,6 @@ int MySocket::sock_fd() const
 
 MySocket::~MySocket()
 {
-	close();
 }
 
 bool MySocket::isVaild()

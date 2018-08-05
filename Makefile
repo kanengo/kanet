@@ -3,7 +3,7 @@ KANET_SRC_PATH = ./kanet-src
 KANET_BUILD_PATH = ./bin
 
 CC = g++
-CFLARGS = -std=c++11 -g -O2 -Wall 
+CFLARGS = -std=c++11 -g -O0 -Wall 
 LDFLARGS = -pthread
 
 KANET_SRC = $(wildcard $(KANET_SRC_PATH)/*.cc)
